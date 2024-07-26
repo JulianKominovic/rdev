@@ -250,9 +250,9 @@ pub use keycodes::macos::key_from_code as macos_key_from_code;
 #[cfg(target_os = "macos")]
 pub use crate::keycodes::macos::{key_from_code, virtual_keycodes::*};
 #[cfg(target_os = "macos")]
-use crate::macos::{display_size as _display_size, listen as _listen, simulate as _simulate};
+use crate::macos::listen as _listen;
 #[cfg(target_os = "macos")]
-pub use crate::macos::{set_is_main_thread, Keyboard, VirtualInput};
+pub use crate::macos::{set_is_main_thread, Keyboard};
 #[cfg(target_os = "macos")]
 pub use core_graphics::{event::CGEventTapLocation, event_source::CGEventSourceStateID};
 
@@ -301,67 +301,10 @@ where
     _listen(callback)
 }
 
-/// Sending some events
-///
-/// ```no_run
-/// use rdev::{simulate, Button, EventType, Key, SimulateError};
-/// use std::{thread, time};
-///
-/// fn send(event_type: &EventType) {
-///     let delay = time::Duration::from_millis(20);
-///     match simulate(event_type) {
-///         Ok(()) => (),
-///         Err(SimulateError) => {
-///             println!("We could not send {:?}", event_type);
-///         }
-///     }
-///     // Let ths OS catchup (at least MacOS)
-///     thread::sleep(delay);
-/// }
-///
-/// fn my_shortcut() {
-///     send(&EventType::KeyPress(Key::KeyS));
-///     send(&EventType::KeyRelease(Key::KeyS));
-///
-///     send(&EventType::MouseMove { x: 0.0, y: 0.0 });
-///     send(&EventType::MouseMove { x: 400.0, y: 400.0 });
-///     send(&EventType::ButtonPress(Button::Left));
-///     send(&EventType::ButtonRelease(Button::Right));
-///     send(&EventType::Wheel {
-///         delta_x: 0,
-///         delta_y: 1,
-///     });
-/// }
-/// ```
-#[cfg(not(any(target_os = "android", target_os = "ios")))]
-pub fn simulate(event_type: &EventType) -> Result<(), SimulateError> {
-    _simulate(event_type)
-}
-
-/// Returns the size in pixels of the main screen.
-/// This is useful to use with x, y from MouseMove Event.
-///
-/// ```no_run
-/// use rdev::{display_size};
-///
-/// let (w, h) = display_size().unwrap();
-/// println!("My screen size : {:?}x{:?}", w, h);
-/// ```
-#[cfg(not(any(target_os = "android", target_os = "ios")))]
-pub fn display_size() -> Result<(u64, u64), DisplayError> {
-    _display_size()
-}
-
 #[cfg(target_os = "linux")]
 pub use crate::linux::{
     disable_grab, enable_grab, exit_grab_listen, is_grabbed, start_grab_listen,
 };
-#[cfg(target_os = "macos")]
-pub use crate::macos::set_keyboard_extra_info;
-#[cfg(target_os = "macos")]
-pub use crate::macos::set_mouse_extra_info;
-#[cfg(target_os = "macos")]
-pub use crate::macos::{exit_grab, grab as _grab, is_grabbed};
 #[cfg(target_os = "windows")]
 pub use crate::windows::set_keyboard_extra_info;
 #[cfg(target_os = "windows")]
@@ -396,13 +339,6 @@ pub use crate::windows::{set_event_popup, set_get_key_unicode};
 ///     }
 /// }
 /// ```
-#[cfg(not(any(target_os = "android", target_os = "ios", target_os = "linux")))]
-pub fn grab<T>(callback: T) -> Result<(), GrabError>
-where
-    T: Fn(Event) -> Option<Event> + 'static,
-{
-    _grab(callback)
-}
 
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 pub(crate) fn keyboard_only() -> bool {
